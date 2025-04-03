@@ -1,8 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
-import {request} from "express";
+import express from "express"
 
-export const protectRoute = async (req,resizeBy,next) =>{
+
+export const protectRoute = async (req,_resizeBy,next) =>{
     try {
        const token = res.cookies.jwt
 
@@ -10,7 +11,7 @@ export const protectRoute = async (req,resizeBy,next) =>{
         return res.status(401).json({ message: "unauthorized - No Token Provided"});
        }
 
-        const decoded = jwt.verify(token, Process.env.JWT_SECRET)
+        const decoded = jwt.verify(token,process.env.JWT_SECRET)
 
         if(!decoded){
             return res.status(401).json({ message: "unauthorized - No Token Provided"});
@@ -23,10 +24,10 @@ export const protectRoute = async (req,resizeBy,next) =>{
 
         req.user = user
 
-        next()
+        next();
 
     } catch (error) {
     
-     res.status(500).json({ message: "Internal server error"});        
+        return res.status(500).json({ message: "Internal server error"});
     }
-}
+};
