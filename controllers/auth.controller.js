@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import { generateToken } from "../lib/utils.js";
 import bcrypt from "bcryptjs"
+import cloudinary from "../lib/cloudinary.js"
 
 export const signup = async (req, res) => {
     const { fullName,email,password}= req.body;
@@ -15,7 +16,9 @@ export const signup = async (req, res) => {
 
    const user = await User.findOne({email})
 
-   if (user) return res.status(400).json({ messege: "Email already exists"});
+   if (user){ 
+    return res.status(400).json({ messege: "Email already exists"});
+}
 
    const salt = await bcrypt.genSalt(10);
    const hashPassword = await bcrypt.hash(password,salt);
@@ -85,3 +88,33 @@ export const logout = (req,res) =>{
         res.status(500).json({ message: "Internal server error"});
     }
 };
+
+export const updateProfile = async (req, res) => {
+    try {
+        const {profilePic} = req.body;
+       const userId = req.user._id;
+
+       if (!profilePic){
+        return res.status(400).json ({ message: "profile pic is required"});
+       }
+
+     const uploadResponse =  await cloudinary.uploader.upload(profilePic)
+     const uploadUser = await User.findByIdAndUpdate(userId, {profilePic: uploadResponse.secure_url}, {new:true})
+
+     res.status(200).json(updatedUser)
+    } catch (error) {
+        console.log("error in update profile:", error);
+        res.status(500).json({message:"internal server error"});
+    }
+};
+
+export const checkauth = async (req, res) => {
+    try {
+        res.status(200).json(req.user);
+    } catch {
+        console.log("error in checkAuth controller", error.message);
+        res.status(500).json ({message: "Internal server error"});
+        
+    }
+}
+  
